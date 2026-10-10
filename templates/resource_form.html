@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Share Community Resource - Community Help Connect{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow border-0 rounded-4">
+                <div class="card-header bg-warning text-dark p-4 rounded-top-4">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h3 class="fw-bold mb-1">
+                                <i class="bi bi-gift-fill me-2 text-primary"></i>List a Community Resource
+                            </h3>
+                            <p class="small text-muted mb-0">Report available meals, emergency supplies, or equipment for your neighbors</p>
+                        </div>
+                        <a href="{{ url_for('donations.donor_dashboard') }}" class="btn btn-outline-dark btn-sm">
+                            <i class="bi bi-arrow-left me-1"></i> Back to Hub
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    <form method="POST" action="{{ url_for('donations.new_resource') }}" novalidate>
+                        {{ form.hidden_tag() }}
+
+                        <!-- Category -->
+                        <div class="mb-3">
+                            {{ form.category.label(class="form-label fw-semibold") }}
+                            {{ form.category(class="form-select" + (" is-invalid" if form.category.errors else ""), id="category") }}
+                            <div class="form-text">Choose the category matching your donation.</div>
+                            {% for error in form.category.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Resource Name -->
+                        <div class="mb-3">
+                            {{ form.name.label(class="form-label fw-semibold") }}
+                            {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else ""), placeholder="e.g. Winter blankets and sweaters") }}
+                            {% for error in form.name.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-3">
+                            {{ form.description.label(class="form-label fw-semibold") }}
+                            {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows="4", placeholder="e.g. 30 packaged vegetarian meal boxes from conference lunch buffet. Packaged in sanitized foil containers...") }}
+                            {% for error in form.description.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Quantity and Unit -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                {{ form.quantity.label(class="form-label fw-semibold") }}
+                                {{ form.quantity(class="form-control" + (" is-invalid" if form.quantity.errors else ""), placeholder="e.g. 30") }}
+                                {% for error in form.quantity.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.unit.label(class="form-label fw-semibold") }}
+                                {{ form.unit(class="form-control" + (" is-invalid" if form.unit.errors else ""), placeholder="e.g. meal boxes, blankets, kits, kg") }}
+                                {% for error in form.unit.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Locality and Dates -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                {{ form.locality.label(class="form-label fw-semibold") }}
+                                {{ form.locality(class="form-control" + (" is-invalid" if form.locality.errors else ""), placeholder="e.g. Koramangala 5th Block") }}
+                                {% for error in form.locality.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.available_until.label(class="form-label fw-semibold") }}
+                                {{ form.available_until(class="form-control" + (" is-invalid" if form.available_until.errors else "")) }}
+                                <div class="form-text">Available until date.</div>
+                                {% for error in form.available_until.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.expiry_date.label(class="form-label fw-semibold") }}
+                                {{ form.expiry_date(class="form-control" + (" is-invalid" if form.expiry_date.errors else ""), id="expiry_date") }}
+                                <div class="form-text">Mandatory for perishable food items.</div>
+                                {% for error in form.expiry_date.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Pickup Instructions -->
+                        <div class="mb-3">
+                            {{ form.pickup_instructions.label(class="form-label fw-semibold") }}
+                            {{ form.pickup_instructions(class="form-control" + (" is-invalid" if form.pickup_instructions.errors else ""), rows="3", placeholder="e.g. Pickup from rear kitchen entrance of Hotel Grand between 2 PM and 5 PM. Ask for Ramesh.") }}
+                            {% for error in form.pickup_instructions.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Contact Sharing Preference -->
+                        <div class="mb-4">
+                            {{ form.contact_preference.label(class="form-label fw-semibold") }}
+                            {{ form.contact_preference(class="form-select" + (" is-invalid" if form.contact_preference.errors else "")) }}
+                            {% for error in form.contact_preference.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('donations.donor_dashboard') }}" class="btn btn-outline-secondary px-4">Cancel</a>
+                            {{ form.submit(class="btn btn-warning fw-bold text-dark px-4 shadow-sm") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

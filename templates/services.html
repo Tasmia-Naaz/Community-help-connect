@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Service Categories - Community Help Connect{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold">Platform Service Categories</h1>
+        <p class="lead text-secondary">
+            Community Help Connect structures assistance into six core service categories, ensuring safety, clarity, and accountability.
+        </p>
+    </div>
+
+    <div class="row g-4">
+        <!-- 1 -->
+        <div class="col-lg-6">
+            <div class="card h-100 shadow-sm border-0 p-4">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rounded-circle bg-primary bg-opacity-10 text-primary p-3 me-3">
+                        <i class="bi bi-bag-check-fill fs-2"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-0">1. Essential Items Assistance</h4>
+                        <span class="badge bg-primary">Supplies & Needs</span>
+                    </div>
+                </div>
+                <p class="text-secondary">
+                    Designed for families and individuals facing unexpected hardships, seasonal transitions, or sudden loss of basic necessities. Covers winter blankets, warm clothes, children's school supplies, sanitary kits, diapers, and dry ration staples.
+                </p>
+                <div class="bg-light p-3 rounded small">
+                    <strong>Allowed Items:</strong> Clean wearable clothes, sealed hygiene products, packaged dry goods, student kits.<br>
+                    <strong>Not Permitted:</strong> Perishable homemade items with unknown origins, expired goods, or monetary loans.
+                </div>
+            </div>
+        </div>
+
+        <!-- 2 -->
+        <div class="col-lg-6">
+            <div class="card h-100 shadow-sm border-0 p-4">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rounded-circle bg-success bg-opacity-10 text-success p-3 me-3">
+                        <i class="bi bi-basket2-fill fs-2"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-0">2. Surplus Food Sharing</h4>
+                        <span class="badge bg-success">Food Safety & Anti-Waste</span>
+                    </div>
+                </div>
+                <p class="text-secondary">
+                    Local catering services, conference organizers, restaurants, and residents can manually report fresh, surplus food to feed neighbors. All food donations mandate clear pickup timeframes and best-before deadlines to ensure food safety.
+                </p>
+                <div class="bg-light p-3 rounded small">
+                    <strong>Safety Rule:</strong> Must be reported with explicit packaging details and expiry timestamps. Expired food listings are automatically marked unavailable and hidden by our system.
+                </div>
+            </div>
+        </div>
+
+        <!-- 3 -->
+        <div class="col-lg-6">
+            <div class="card h-100 shadow-sm border-0 p-4">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rounded-circle bg-danger bg-opacity-10 text-danger p-3 me-3">
+                        <i class="bi bi-prescription2 fs-2"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-0">3. Medical Assistance</h4>
+                        <span class="badge bg-danger">Non-Clinical Support</span>
+                    </div>
+                </div>
+                <p class="text-secondary">
+                    Facilitates peer-to-peer assistance for prescription medicine pickups, voluntary blood donor coordination, and non-emergency mobility equipment lending (crutches, wheelchairs, walkers).
+                </p>
+                <div class="bg-light p-3 rounded small text-danger">
+                    <strong>Disclaimer:</strong> This service coordinates community support only. It does not provide medical consultations, diagnosis, telemedicine, or emergency triage.
+                </div>
+            </div>
+        </div>
+
+        <!-- 4 -->
+        <div class="col-lg-6">
+            <div class="card h-100 shadow-sm border-0 p-4">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rounded-circle bg-info bg-opacity-10 text-info p-3 me-3">
+                        <i class="bi bi-car-front-fill fs-2"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-0">4. Transportation Assistance</h4>
+                        <span class="badge bg-info text-dark">Mobility & Transit</span>
+                    </div>
+                </div>
+                <p class="text-secondary">
+                    Connects individuals with limited mobility, elderly citizens, or convalescing patients with verified volunteer drivers for essential trips, such as dialysis treatments, therapy, or government pension appointments.
+                </p>
+                <div class="bg-light p-3 rounded small">
+                    <strong>Best Practice:</strong> Specify wheelchair accessibility needs, appointment times, and round-trip expectations in the request description.
+                </div>
+            </div>
+        </div>
+
+        <!-- 5 -->
+        <div class="col-lg-6">
+            <div class="card h-100 shadow-sm border-0 p-4">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rounded-circle bg-warning bg-opacity-25 text-dark p-3 me-3">
+                        <i class="bi bi-shield-fill-exclamation fs-2 text-danger"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-0">5. Emergency Relief</h4>
+                        <span class="badge bg-warning text-dark">Disaster Coordination</span>
+                    </div>
+                </div>
+                <p class="text-secondary">
+                    Activated during seasonal calamities such as monsoon flash floods, heatwaves, or severe power grid failures. Coordinates distribution of clean potable water, sandbags, charging banks, and basic shelter supplies.
+                </p>
+                <div class="bg-light p-3 rounded small">
+                    <strong>Emergency Mode Integration:</strong> When administrators declare an Emergency Event, requests in this category receive priority matching and instant volunteer notifications.
+                </div>
+            </div>
+        </div>
+
+        <!-- 6 -->
+        <div class="col-lg-6">
+            <div class="card h-100 shadow-sm border-0 p-4">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rounded-circle bg-dark bg-opacity-10 text-dark p-3 me-3">
+                        <i class="bi bi-search-heart fs-2"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-0">6. Lost & Found Assistance</h4>
+                        <span class="badge bg-dark">Neighborhood Watch</span>
+                    </div>
+                </div>
+                <p class="text-secondary">
+                    Neighborhood announcements for lost or found pets, essential keys, backpacks, or student IDs. Helps reunite community members with cherished belongings without cluttering public bulletin boards.
+                </p>
+                <div class="bg-light p-3 rounded small">
+                    <strong>Privacy Note:</strong> Contact details are shielded from scrapers and visible according to the owner's privacy settings.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

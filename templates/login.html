@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In - Community Help Connect{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-5 col-md-7">
+            <div class="card shadow border-0 rounded-4">
+                <div class="card-header bg-primary text-white p-4 rounded-top-4 text-center">
+                    <h3 class="fw-bold mb-1">Member Login</h3>
+                    <p class="small text-white-50 mb-0">Sign in to your Community Help Connect account</p>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <form method="POST" action="{{ url_for('auth.login') }}" novalidate>
+                        {{ form.hidden_tag() }}
+
+                        <!-- Email -->
+                        <div class="mb-3">
+                            {{ form.email.label(class="form-label fw-semibold") }}
+                            {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), placeholder="name@example.com") }}
+                            {% for error in form.email.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Password -->
+                        <div class="mb-4">
+                            {{ form.password.label(class="form-label fw-semibold") }}
+                            {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), placeholder="Enter your password") }}
+                            {% for error in form.password.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid mb-3">
+                            {{ form.submit(class="btn btn-primary btn-lg fw-bold shadow-sm") }}
+                        </div>
+
+                        <div class="text-center small text-secondary mb-4">
+                            Don't have an account yet? 
+                            <a href="{{ url_for('auth.register') }}" class="fw-semibold text-primary text-decoration-none">Register here</a>
+                        </div>
+                    </form>
+
+                    <!-- College Viva / Demo Credentials Quick-Reference Box -->
+                    <div class="card bg-light border-dashed p-3 rounded-3 mt-3">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-mortarboard-fill text-primary me-2"></i>
+                            <strong class="small text-dark">College Viva Demo Credentials</strong>
+                        </div>
+                        <div class="small text-secondary" style="font-size: 0.8rem;">
+                            <div class="mb-1"><strong>Admin:</strong> <code>admin@communityhelp.org</code> / <code>Admin@12345</code></div>
+                            <div class="mb-1"><strong>Seeker:</strong> <code>seeker@example.com</code> / <code>Seeker@123</code></div>
+                            <div class="mb-1"><strong>Volunteer:</strong> <code>volunteer@example.com</code> / <code>Volunteer@123</code></div>
+                            <div><strong>Donor:</strong> <code>donor@example.com</code> / <code>Donor@123</code></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

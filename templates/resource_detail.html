@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}Resource Details #{{ resource.id }} - Community Help Connect{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb & Back -->
+    <div class="mb-3 d-flex justify-content-between align-items-center">
+        <a href="javascript:history.back()" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Back
+        </a>
+        <span class="text-muted small">Resource Listing #{{ resource.id }} &bull; Added {{ resource.created_at.strftime('%d %b %Y') if resource.created_at else '' }}</span>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Details -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <div>
+                        <span class="category-badge me-2">{{ resource.category }}</span>
+                        <strong class="text-dark fs-5">{{ resource.quantity }} {{ resource.unit }}</strong>
+                    </div>
+                    <div>
+                        {% if resource.status == 'Available' %}
+                            <span class="badge badge-status badge-status-available fs-6">Available</span>
+                        {% elif resource.status == 'Reserved' %}
+                            <span class="badge badge-status badge-status-reserved fs-6">Reserved</span>
+                        {% elif resource.status == 'Collected' %}
+                            <span class="badge badge-status badge-status-collected fs-6">Collected</span>
+                        {% elif resource.status == 'Distributed' %}
+                            <span class="badge badge-status badge-status-distributed fs-6">Distributed</span>
+                        {% elif resource.status == 'Withdrawn' %}
+                            <span class="badge badge-status badge-status-withdrawn fs-6">Withdrawn</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    {% if resource.is_expired and resource.status != 'Distributed' %}
+                    <div class="alert alert-danger d-flex align-items-center mb-3" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill fs-4 me-2"></i>
+                        <div>
+                            <strong>Perishable Item Warning:</strong> This resource listing has reached its expiry date or deadline and is marked as withdrawn to uphold community food safety standards.
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <h4 class="fw-bold text-dark mb-2">{{ resource.name or 'Resource Description' }}</h4>
+                    <p class="text-secondary lh-base mb-4">
+                        {{ resource.description }}
+                    </p>
+
+                    {% if resource.pickup_instructions %}
+                    <div class="p-3 bg-light rounded-3 mb-4">
+                        <h6 class="fw-bold text-dark mb-1"><i class="bi bi-geo-alt-fill text-danger me-1"></i>Pickup Instructions:</h6>
+                        <p class="text-secondary small mb-0">{{ resource.pickup_instructions }}</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Attributes Grid -->
+                    <div class="row g-3 border-top pt-3 small text-secondary">
+                        <div class="col-sm-6">
+                            <strong><i class="bi bi-geo-alt text-danger me-1"></i>Locality:</strong>
+                            <span class="text-dark">{{ resource.locality }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <strong><i class="bi bi-calendar-x text-danger me-1"></i>Expiry Date:</strong>
+                            <span class="text-dark">{{ resource.expiry_date.strftime('%d %b %Y') if resource.expiry_date else 'Not applicable (Non-perishable)' }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <strong><i class="bi bi-clock text-primary me-1"></i>Available Until:</strong>
+                            <span class="text-dark">{{ resource.available_until.strftime('%d %b %Y') if resource.available_until else 'Until distributed' }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <strong><i class="bi bi-shield-check text-success me-1"></i>Contact Sharing:</strong>
+                            <span class="text-dark">{{ resource.contact_preference.replace('_', ' ').title() }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Toolbar for Owner / Volunteers / Admin -->
+                <div class="card-footer bg-white p-3 border-top d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <span class="text-muted small">Status Management</span>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% if is_owner or (current_user and current_user.is_admin) %}
+                            {% if resource.status == 'Available' %}
+                            <form method="POST" action="{{ url_for('donations.update_resource_status', resource_id=resource.id) }}" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="new_status" value="Reserved">
+                                <button type="submit" class="btn btn-warning btn-sm text-dark fw-bold">Mark Reserved</button>
+                            </form>
+                            {% elif resource.status == 'Reserved' %}
+                            <form method="POST" action="{{ url_for('donations.update_resource_status', resource_id=resource.id) }}" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="new_status" value="Collected">
+                                <button type="submit" class="btn btn-info btn-sm text-dark fw-bold">Mark Collected</button>
+                            </form>
+                            {% elif resource.status == 'Collected' %}
+                            <form method="POST" action="{{ url_for('donations.update_resource_status', resource_id=resource.id) }}" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="new_status" value="Distributed">
+                                <button type="submit" class="btn btn-success btn-sm fw-bold">Mark Distributed</button>
+                            </form>
+                            {% endif %}
+
+                            {% if resource.status in ['Available', 'Reserved', 'Collected'] %}
+                            <form method="POST" action="{{ url_for('donations.withdraw_resource', resource_id=resource.id) }}" class="d-inline" data-confirm="Withdraw this resource from circulation?">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Withdraw</button>
+                            </form>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status History Audit Trail -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="fw-bold mb-0 text-dark">
+                        <i class="bi bi-clock-history me-2 text-primary"></i>Status Audit Log
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    {% if history %}
+                    <div class="timeline">
+                        {% for h in history %}
+                        <div class="timeline-item">
+                            <div class="timeline-dot"></div>
+                            <div class="d-flex justify-content-between align-items-baseline">
+                                <strong class="text-dark">{{ h.previous_status }} &rarr; <span class="text-primary">{{ h.new_status }}</span></strong>
+                                <span class="small text-muted">{{ h.created_at.strftime('%d %b %Y, %H:%M') if h.created_at else '' }}</span>
+                            </div>
+                            <div class="small text-secondary mt-1">
+                                Changed by: <strong>{{ h.changed_by.full_name if h.changed_by else 'System / Expired Check' }}</strong>
+                                {% if h.notes %}
+                                <div class="fst-italic text-muted mt-1">&ldquo;{{ h.notes }}&rdquo;</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted small mb-0">No status changes logged yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Donor Information -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h6 class="fw-bold mb-0 text-dark">
+                        <i class="bi bi-person-heart me-2 text-warning"></i>Donor Information
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="text-muted small">Donor Name</div>
+                        <strong class="text-dark fs-6">{{ resource.donor.full_name }}</strong>
+                    </div>
+
+                    {% if can_view_contact %}
+                    <div class="mb-3">
+                        <div class="text-muted small">Direct Phone Number</div>
+                        <a href="tel:{{ resource.donor.phone }}" class="fw-bold text-success text-decoration-none">
+                            <i class="bi bi-telephone-fill me-1"></i>{{ resource.donor.phone }}
+                        </a>
+                    </div>
+                    <div class="mb-3">
+                        <div class="text-muted small">Email Address</div>
+                        <a href="mailto:{{ resource.donor.email }}" class="text-primary text-decoration-none small">
+                            <i class="bi bi-envelope-fill me-1"></i>{{ resource.donor.email }}
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-light border small text-muted mb-0">
+                        <i class="bi bi-lock-fill text-warning me-1"></i>
+                        Contact details are protected according to donor preference. Contact is shared upon reservation.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Declare Emergency Event - Community Help Connect{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card shadow border-0 rounded-4">
+                <div class="card-header bg-danger text-white p-4 rounded-top-4">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h3 class="fw-bold mb-1">
+                                <i class="bi bi-broadcast me-2"></i>Declare Emergency Event
+                            </h3>
+                            <p class="small text-white-50 mb-0">Activate high-priority community mobilization and in-app alerts</p>
+                        </div>
+                        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-light btn-sm">
+                            <i class="bi bi-arrow-left me-1"></i> Admin Portal
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    <div class="alert alert-warning border small text-dark mb-4">
+                        <strong><i class="bi bi-info-circle-fill me-1"></i> Academic Project Note:</strong>
+                        This feature coordinates local volunteer efforts during simulated or real community crisis conditions. It broadcasts high-priority in-app notifications and boosts the priority of open requests in the affected locality.
+                    </div>
+
+                    <form method="POST" action="{{ url_for('admin.declare_emergency') }}" novalidate>
+                        {{ form.hidden_tag() }}
+
+                        <!-- Emergency Type -->
+                        <div class="mb-3">
+                            {{ form.emergency_type.label(class="form-label fw-semibold") }}
+                            {{ form.emergency_type(class="form-control" + (" is-invalid" if form.emergency_type.errors else ""), placeholder="e.g. Flash Flood Waterlogging, Severe Storm, Urban Heatwave") }}
+                            {% for error in form.emergency_type.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Affected Locality -->
+                        <div class="mb-3">
+                            {{ form.affected_locality.label(class="form-label fw-semibold") }}
+                            {{ form.affected_locality(class="form-control" + (" is-invalid" if form.affected_locality.errors else ""), placeholder="e.g. Indiranagar, Sector 4 or Central Ward") }}
+                            <div class="form-text">All active volunteers in this locality will be immediately notified.</div>
+                            {% for error in form.affected_locality.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Severity -->
+                        <div class="mb-3">
+                            {{ form.severity.label(class="form-label fw-semibold") }}
+                            {{ form.severity(class="form-select" + (" is-invalid" if form.severity.errors else "")) }}
+                            {% for error in form.severity.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Description & Instructions -->
+                        <div class="mb-4">
+                            {{ form.description.label(class="form-label fw-semibold") }}
+                            {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows="5", placeholder="Describe the crisis situation and list specific assistance needed (e.g. sandbags, clean drinking water distribution, high-clearance vehicle transit)...") }}
+                            {% for error in form.description.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary px-4">Cancel</a>
+                            {{ form.submit(class="btn btn-danger fw-bold px-4 shadow-sm") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

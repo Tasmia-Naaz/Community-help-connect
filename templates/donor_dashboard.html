@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+
+{% block title %}Resource Donor Hub - Community Help Connect{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="bi bi-gift-fill text-warning me-2"></i>Resource Donor Hub
+            </h2>
+            <p class="text-secondary mb-0">
+                Welcome, <strong>{{ current_user.full_name }}</strong>! Manage and track your donated supplies, meals, and community resources.
+            </p>
+        </div>
+        <div>
+            <a href="{{ url_for('donations.new_resource') }}" class="btn btn-warning fw-bold text-dark shadow-sm">
+                <i class="bi bi-plus-square-fill me-1"></i> List New Resource
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary KPI Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-lg-3">
+            <div class="stat-card shadow-sm">
+                <div class="text-secondary small fw-semibold text-uppercase">Total Resources</div>
+                <div class="stat-value text-dark">{{ total_resources }}</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="stat-card stat-completed shadow-sm">
+                <div class="text-success small fw-semibold text-uppercase">Currently Available</div>
+                <div class="stat-value text-success">{{ available_count }}</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="stat-card stat-pending shadow-sm">
+                <div class="text-warning small fw-semibold text-uppercase">Reserved for Pickup</div>
+                <div class="stat-value text-warning">{{ reserved_count }}</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <div class="stat-card stat-active shadow-sm">
+                <div class="text-primary small fw-semibold text-uppercase">Successfully Distributed</div>
+                <div class="stat-value text-primary">{{ distributed_count }}</div>
+            </div>
+        </div>
+    </div>
+
+    {% set pending_resource_requests = resource_requests | selectattr('status', 'equalto', 'Pending') | list %}
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-inboxes me-2 text-warning"></i>Pending Item Requests</h5>
+            <span class="badge bg-warning text-dark">{{ pending_resource_requests|length }} Pending</span>
+        </div>
+        <div class="card-body p-0">
+            {% if pending_resource_requests %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light"><tr><th class="ps-3">Resource</th><th>Volunteer</th><th>Requested Quantity</th><th>Received</th><th class="text-end pe-3">Decision</th></tr></thead>
+                    <tbody>
+                        {% for item_request in pending_resource_requests %}
+                        <tr>
+                            <td class="ps-3"><span class="category-badge">{{ item_request.resource.category }}</span><div class="fw-semibold mt-1">{{ item_request.resource.name or item_request.resource.description.splitlines()[0] }}</div><div class="small text-secondary">{{ item_request.resource.description }}</div></td>
+                            <td>{{ item_request.volunteer.full_name }}</td>
+                            <td>{{ item_request.quantity }} {{ item_request.resource.unit }}</td>
+                            <td class="small text-muted">{{ item_request.created_at.strftime('%d %b %Y') }}</td>
+                            <td class="text-end pe-3">
+                                <div class="d-inline-flex gap-2">
+                                    <form method="POST" action="{{ url_for('donations.decide_resource_request', resource_request_id=item_request.id) }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <input type="hidden" name="decision" value="approve">
+                                        <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                                    </form>
+                                    <form method="POST" action="{{ url_for('donations.decide_resource_request', resource_request_id=item_request.id) }}" data-confirm="Reject this volunteer's item request?">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <input type="hidden" name="decision" value="reject">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Reject</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="p-4 text-center text-muted">There are no pending item requests.</div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% set handled_resource_requests = resource_requests | rejectattr('status', 'equalto', 'Pending') | list %}
+    {% if handled_resource_requests %}
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white py-3 border-bottom"><h5 class="fw-bold mb-0 text-dark"><i class="bi bi-clock-history me-2 text-primary"></i>Request Status History</h5></div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light"><tr><th class="ps-3">Resource</th><th>Volunteer</th><th>Quantity</th><th>Status</th><th>Updated</th></tr></thead>
+                    <tbody>
+                        {% for item_request in handled_resource_requests %}
+                        <tr>
+                            <td class="ps-3"><span class="category-badge">{{ item_request.resource.category }}</span><div class="fw-semibold mt-1">{{ item_request.resource.name or item_request.resource.description.splitlines()[0] }}</div><div class="small text-secondary">{{ item_request.resource.description }}</div></td>
+                            <td>{{ item_request.volunteer.full_name }}</td>
+                            <td>{{ item_request.quantity }} {{ item_request.resource.unit }}</td>
+                            <td><span class="badge {% if item_request.status == 'Approved' %}bg-success{% elif item_request.status == 'Rejected' %}bg-danger{% else %}bg-primary{% endif %}">{{ item_request.status }}</span></td>
+                            <td class="small text-muted">{{ item_request.updated_at.strftime('%d %b %Y') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Listings Table Card -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-3 d-flex flex-wrap justify-content-between align-items-center gap-2 border-bottom">
+            <h5 class="fw-bold mb-0 text-dark">
+                <i class="bi bi-box-seam me-2 text-primary"></i>My Reported Resource Listings
+            </h5>
+
+            <!-- Filter by Status -->
+            <div class="d-flex align-items-center gap-2">
+                <span class="small text-secondary fw-semibold">Status:</span>
+                <div class="btn-group btn-group-sm" role="group">
+                    <a href="{{ url_for('donations.donor_dashboard') }}" class="btn btn-outline-secondary {% if not current_filter %}active{% endif %}">All</a>
+                    <a href="{{ url_for('donations.donor_dashboard', status='Available') }}" class="btn btn-outline-success {% if current_filter == 'Available' %}active{% endif %}">Available</a>
+                    <a href="{{ url_for('donations.donor_dashboard', status='Reserved') }}" class="btn btn-outline-warning text-dark {% if current_filter == 'Reserved' %}active{% endif %}">Reserved</a>
+                    <a href="{{ url_for('donations.donor_dashboard', status='Distributed') }}" class="btn btn-outline-primary {% if current_filter == 'Distributed' %}active{% endif %}">Distributed</a>
+                    <a href="{{ url_for('donations.donor_dashboard', status='Withdrawn') }}" class="btn btn-outline-secondary {% if current_filter == 'Withdrawn' %}active{% endif %}">Withdrawn</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            {% if listings %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Resource Description</th>
+                            <th>Category</th>
+                            <th>Quantity & Unit</th>
+                            <th>Pickup Locality</th>
+                            <th>Status</th>
+                            <th>Expiry / Deadline</th>
+                            <th class="text-end pe-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for res in listings %}
+                        <tr>
+                            <td class="ps-3">
+                                <a href="{{ url_for('donations.view_resource', resource_id=res.id) }}" class="fw-bold text-dark text-decoration-none">
+                                    {{ res.name or (res.description[:70] ~ ('...' if res.description|length > 70 else '')) }}
+                                </a>
+                                {% if res.is_expired and res.status != 'Distributed' %}
+                                <div class="text-danger small fw-semibold">
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i> Passed Expiry Date (Auto-Withdrawn)
+                                </div>
+                                {% endif %}
+                            </td>
+                            <td><span class="category-badge">{{ res.category }}</span></td>
+                            <td>
+                                <strong class="text-dark">{{ res.quantity }}</strong> 
+                                <span class="text-secondary small">{{ res.unit }}</span>
+                            </td>
+                            <td><small><i class="bi bi-geo-alt text-danger me-1"></i>{{ res.locality }}</small></td>
+                            <td>
+                                {% if res.status == 'Available' %}
+                                    <span class="badge badge-status badge-status-available">Available</span>
+                                {% elif res.status == 'Reserved' %}
+                                    <span class="badge badge-status badge-status-reserved">Reserved</span>
+                                {% elif res.status == 'Collected' %}
+                                    <span class="badge badge-status badge-status-collected">Collected</span>
+                                {% elif res.status == 'Distributed' %}
+                                    <span class="badge badge-status badge-status-distributed">Distributed</span>
+                                {% elif res.status == 'Withdrawn' %}
+                                    <span class="badge badge-status badge-status-withdrawn">Withdrawn</span>
+                                {% endif %}
+                            </td>
+                            <td class="small">
+                                {% if res.expiry_date %}
+                                    <span class="{% if res.is_expired %}text-danger fw-bold{% else %}text-secondary{% endif %}">
+                                        <i class="bi bi-calendar-x me-1"></i>{{ res.expiry_date.strftime('%d %b %Y') }}
+                                    </span>
+                                {% elif res.available_until %}
+                                    <span class="text-secondary">
+                                        <i class="bi bi-clock me-1"></i>Until {{ res.available_until.strftime('%d %b %Y') }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">Ongoing</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end pe-3">
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('donations.view_resource', resource_id=res.id) }}" class="btn btn-outline-primary" title="View Details">
+                                        <i class="bi bi-eye"></i> Details
+                                    </a>
+                                    {% if res.status in ['Available', 'Reserved'] %}
+                                    <form method="POST" action="{{ url_for('donations.withdraw_resource', resource_id=res.id) }}" class="d-inline" data-confirm="Withdraw this resource from community availability?">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-outline-danger" title="Withdraw Listing">
+                                            <i class="bi bi-slash-circle"></i> Withdraw
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="bi bi-box-seam empty-state-icon"></i>
+                <h5 class="fw-bold text-dark">No Resource Listings Found</h5>
+                <p class="text-muted small mb-3">
+                    You have not published any resource listings under this filter. Share excess meals, supplies, or medical items to support neighbors!
+                </p>
+                <a href="{{ url_for('donations.new_resource') }}" class="btn btn-warning btn-sm fw-bold text-dark">
+                    <i class="bi bi-plus-circle me-1"></i> Share a Resource
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

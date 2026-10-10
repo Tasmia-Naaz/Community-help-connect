@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Connecting Neighbors, Sharing Support{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="py-5 bg-white border-bottom shadow-sm">
+    <div class="container">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-7">
+                <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold px-3 py-2 rounded-pill mb-3">
+                    <i class="bi bi-geo-alt-fill me-1"></i> Hyperlocal Peer-to-Peer Community Support
+                </span>
+                <h1 class="display-4 fw-bold text-dark lh-sm mb-3">
+                    Neighborhood Assistance When You Need It Most.
+                </h1>
+                <p class="lead text-secondary mb-4">
+                    Community Help Connect bridges the gap between individuals facing urgent everyday difficulties, dedicated local volunteers, and generous donors sharing surplus supplies.
+                </p>
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-warning btn-lg fw-bold text-dark px-4 shadow-sm">
+                        <i class="bi bi-person-plus-fill me-1"></i> Join Our Community
+                    </a>
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-lg px-4">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Member Sign In
+                    </a>
+                    <a href="{{ url_for('how_it_works') }}" class="btn btn-light btn-lg text-secondary px-3">
+                        <i class="bi bi-play-circle me-1"></i> How It Works
+                    </a>
+                </div>
+                <!-- Live Platform Indicators -->
+                <div class="d-flex flex-wrap gap-4 pt-3 border-top text-secondary small">
+                    <div>
+                        <strong class="text-primary fs-5">{{ open_requests_count }}</strong> Open Requests
+                    </div>
+                    <div>
+                        <strong class="text-success fs-5">{{ active_resources_count }}</strong> Available Resources
+                    </div>
+                    <div>
+                        <strong class="text-dark fs-5">{{ total_volunteers_count }}</strong> Active Volunteers
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-lg p-4 bg-primary text-white rounded-4">
+                    <h4 class="fw-bold text-warning mb-3">
+                        <i class="bi bi-lightning-charge-fill me-1"></i> Quick Action Portal
+                    </h4>
+                    <p class="small text-white-50 mb-4">
+                        Select your purpose today to get directed to the right coordination workflow.
+                    </p>
+                    <div class="d-grid gap-3">
+                        <a href="{{ url_for('help_requests.new_request') if current_user else url_for('auth.register') }}" class="btn btn-light text-primary fw-bold text-start p-3 d-flex align-items-center justify-content-between">
+                            <div>
+                                <i class="bi bi-life-preserver fs-4 me-2 text-danger"></i>
+                                <span>I Need Community Help</span>
+                            </div>
+                            <i class="bi bi-arrow-right"></i>
+                        </a>
+                        <a href="{{ url_for('volunteers.volunteer_dashboard') if current_user else url_for('auth.register') }}" class="btn btn-light text-primary fw-bold text-start p-3 d-flex align-items-center justify-content-between">
+                            <div>
+                                <i class="bi bi-person-check fs-4 me-2 text-success"></i>
+                                <span>I Want to Volunteer</span>
+                            </div>
+                            <i class="bi bi-arrow-right"></i>
+                        </a>
+                        <a href="{{ url_for('donations.new_resource') if current_user else url_for('auth.register') }}" class="btn btn-light text-primary fw-bold text-start p-3 d-flex align-items-center justify-content-between">
+                            <div>
+                                <i class="bi bi-gift fs-4 me-2 text-warning"></i>
+                                <span>I Have Resources to Donate</span>
+                            </div>
+                            <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- The Six Service Categories Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="badge bg-secondary bg-opacity-10 text-secondary fw-semibold px-3 py-2 rounded-pill mb-2">
+                Scope of Assistance
+            </span>
+            <h2 class="fw-bold">Six Community Service Categories</h2>
+            <p class="text-muted max-w-700 mx-auto">
+                Every request and donation listing belongs to one of our six defined service categories to ensure organized coordination.
+            </p>
+        </div>
+
+        <div class="row g-4">
+            <!-- 1. Essential Items -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 hover-lift border-0 shadow-sm p-3">
+                    <div class="card-body">
+                        <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-inline-flex p-3 mb-3">
+                            <i class="bi bi-bag-check-fill fs-3"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2">Essential Items Assistance</h5>
+                        <p class="text-secondary small">
+                            Collection and distribution of clothes, warm winter blankets, school supply kits, hygiene packages, and household basics for individuals in need.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Surplus Food Sharing -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 hover-lift border-0 shadow-sm p-3">
+                    <div class="card-body">
+                        <div class="rounded-circle bg-success bg-opacity-10 text-success d-inline-flex p-3 mb-3">
+                            <i class="bi bi-basket2-fill fs-3"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2">Surplus Food Sharing</h5>
+                        <p class="text-secondary small">
+                            Donors and local businesses manually report excess edible meals, grocery surplus, and canned goods before expiry to feed families instead of wasting food.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Medical Assistance -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 hover-lift border-0 shadow-sm p-3">
+                    <div class="card-body">
+                        <div class="rounded-circle bg-danger bg-opacity-10 text-danger d-inline-flex p-3 mb-3">
+                            <i class="bi bi-prescription2 fs-3"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2">Medical Assistance</h5>
+                        <p class="text-secondary small">
+                            Pharmacy prescription pickups, voluntary blood donor connections, medical equipment lending (wheelchairs, crutches), and non-clinical support.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Transportation Assistance -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 hover-lift border-0 shadow-sm p-3">
+                    <div class="card-body">
+                        <div class="rounded-circle bg-info bg-opacity-10 text-info d-inline-flex p-3 mb-3">
+                            <i class="bi bi-car-front-fill fs-3"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2">Transportation Assistance</h5>
+                        <p class="text-secondary small">
+                            Volunteer-assisted rides for elderly and disabled neighbors to scheduled hospital visits, dialysis clinics, physical therapy, and welfare offices.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Emergency Relief -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 hover-lift border-0 shadow-sm p-3">
+                    <div class="card-body">
+                        <div class="rounded-circle bg-warning bg-opacity-25 text-dark d-inline-flex p-3 mb-3">
+                            <i class="bi bi-shield-fill-exclamation fs-3 text-danger"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2">Emergency Relief</h5>
+                        <p class="text-secondary small">
+                            Rapid community coordination during seasonal floods, storms, or outages: drinking water supply distribution, temporary sheltering support, and relief packs.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. Lost and Found -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 hover-lift border-0 shadow-sm p-3">
+                    <div class="card-body">
+                        <div class="rounded-circle bg-dark bg-opacity-10 text-dark d-inline-flex p-3 mb-3">
+                            <i class="bi bi-search-heart fs-3"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2">Lost & Found Assistance</h5>
+                        <p class="text-secondary small">
+                            Community notices for missing or found neighborhood pets, vital lost identification cards, bags, and permitted community possessions.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="py-5 bg-white border-top border-bottom">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="badge bg-primary bg-opacity-10 text-primary fw-semibold px-3 py-2 rounded-pill mb-2">
+                Operational Framework
+            </span>
+            <h2 class="fw-bold">How Community Help Connect Works</h2>
+            <p class="text-muted">A clear, accountable workflow tailored for every participant.</p>
+        </div>
+
+        <div class="row g-4 text-center">
+            <div class="col-md-4">
+                <div class="p-4 border rounded-3 h-100 bg-light">
+                    <div class="badge bg-primary rounded-circle p-3 mb-3 fs-5">1</div>
+                    <h5 class="fw-bold">1. Help Seekers Post Requests</h5>
+                    <p class="small text-secondary">
+                        Residents in need submit a request specifying the category, urgency, locality, and preferred contact sharing level. Requests are immediately timestamped.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-4 border rounded-3 h-100 bg-light">
+                    <div class="badge bg-success rounded-circle p-3 mb-3 fs-5">2</div>
+                    <h5 class="fw-bold">2. Rule-Based Volunteer Matching</h5>
+                    <p class="small text-secondary">
+                        Our transparent algorithm matches requests with volunteers by proximity and urgency. A database transaction ensures only one volunteer can accept each task.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-4 border rounded-3 h-100 bg-light">
+                    <div class="badge bg-warning text-dark rounded-circle p-3 mb-3 fs-5">3</div>
+                    <h5 class="fw-bold">3. Transparent Progression & Audit</h5>
+                    <p class="small text-secondary">
+                        Every status update (Accepted &rarr; In Progress &rarr; Completed) is logged in the permanent status audit trail with acting user and timestamp.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action Banner -->
+<section class="py-5 bg-primary text-white text-center">
+    <div class="container">
+        <h2 class="fw-bold mb-3">Ready to Make a Difference in Your Locality?</h2>
+        <p class="lead text-white-50 mb-4 max-w-700 mx-auto">
+            Whether you need a helping hand, have spare time to volunteer, or have surplus items to share, join your local neighborhood network today.
+        </p>
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <a href="{{ url_for('auth.register') }}" class="btn btn-warning btn-lg fw-bold text-dark px-4 shadow">
+                Register as Member
+            </a>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-lg px-4">
+                Login with Existing Account
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

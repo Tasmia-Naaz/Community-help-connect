@@ -1,0 +1,381 @@
+{% extends "base.html" %}
+
+{% block title %}Volunteer Coordination Hub - Community Help Connect{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header & Volunteer Proximity Notice -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="bi bi-people-fill text-success me-2"></i>Volunteer Coordination Hub
+            </h2>
+            <p class="text-secondary mb-0">
+                Logged in as <strong>{{ current_user.full_name }}</strong> &bull; Registered Locality: 
+                <span class="badge bg-primary"><i class="bi bi-geo-alt-fill me-1"></i>{{ current_user.locality }}</span>
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <span class="badge bg-light text-dark border p-2 d-flex align-items-center">
+                <i class="bi bi-clock-history me-1 text-primary"></i> Rule-Based Proximity Matching Active
+            </span>
+        </div>
+    </div>
+
+    <!-- Active Tasks Alert / Summary -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card stat-active shadow-sm">
+                <div class="text-primary small fw-semibold text-uppercase">My Active Tasks</div>
+                <div class="stat-value text-primary">{{ pending_tasks_count }}</div>
+                <div class="small text-muted mt-1">Accepted or In Progress</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card stat-completed shadow-sm">
+                <div class="text-success small fw-semibold text-uppercase">Completed Tasks</div>
+                <div class="stat-value text-success">{{ completed_tasks_count }}</div>
+                <div class="small text-muted mt-1">Neighbors assisted by you</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card stat-urgent shadow-sm">
+                <div class="text-danger small fw-semibold text-uppercase">Open Community Requests</div>
+                <div class="stat-value text-danger">{{ open_requests | length }}</div>
+                <div class="small text-muted mt-1">Awaiting a helpful neighbor</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 1: MY ACCEPTED TASKS -->
+    <div class="card shadow-sm border-0 mb-5">
+        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0 text-dark">
+                <i class="bi bi-check2-circle me-2 text-success"></i>My Accepted Tasks
+            </h5>
+            <span class="badge bg-secondary">{{ assigned_tasks | length }} Assigned</span>
+        </div>
+        <div class="card-body p-0">
+            {% if assigned_tasks %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Task Details</th>
+                            <th>Category</th>
+                            <th>Urgency</th>
+                            <th>Locality</th>
+                            <th>Current Status</th>
+                            <th>Update Workflow Action</th>
+                            <th class="text-end pe-3">View</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in assigned_tasks %}
+                        <tr>
+                            <td class="ps-3">
+                                <a href="{{ url_for('help_requests.view_request', request_id=task.id) }}" class="fw-bold text-dark text-decoration-none">
+                                    {{ task.title }}
+                                </a>
+                                <div class="text-muted small">
+                                    Requested by: {{ task.seeker.full_name }}
+                                </div>
+                            </td>
+                            <td><span class="category-badge">{{ task.category }}</span></td>
+                            <td>
+                                {% if task.urgency == 'Critical' %}
+                                    <span class="badge badge-urgency-critical px-2 py-1">Critical</span>
+                                {% elif task.urgency == 'Urgent' %}
+                                    <span class="badge badge-urgency-urgent px-2 py-1">Urgent</span>
+                                {% else %}
+                                    <span class="badge badge-urgency-normal px-2 py-1">Normal</span>
+                                {% endif %}
+                            </td>
+                            <td><small><i class="bi bi-geo-alt text-danger me-1"></i>{{ task.locality }}</small></td>
+                            <td>
+                                {% if task.status == 'Accepted' %}
+                                    <span class="badge badge-status badge-status-accepted">Accepted</span>
+                                {% elif task.status == 'In Progress' %}
+                                    <span class="badge badge-status badge-status-inprogress">In Progress</span>
+                                {% elif task.status == 'Completed' %}
+                                    <span class="badge badge-status badge-status-completed">Completed</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ task.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <!-- Allowed Status Progression Form -->
+                                {% if task.status == 'Accepted' %}
+                                <form method="POST" action="{{ url_for('volunteers.update_task_status', request_id=task.id) }}" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="new_status" value="In Progress">
+                                    <button type="submit" class="btn btn-sm btn-primary">
+                                        <i class="bi bi-play-fill me-1"></i> Start Task
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ url_for('volunteers.update_task_status', request_id=task.id) }}" class="d-inline ms-1" data-confirm="Release this task back to other volunteers?">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="new_status" value="Pending">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary" title="Release task">
+                                        Release
+                                    </button>
+                                </form>
+                                {% elif task.status == 'In Progress' %}
+                                <form method="POST" action="{{ url_for('volunteers.update_task_status', request_id=task.id) }}" class="d-inline" data-confirm="Confirm that you have finished this task?">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="new_status" value="Completed">
+                                    <button type="submit" class="btn btn-sm btn-success">
+                                        <i class="bi bi-check-lg me-1"></i> Mark Completed
+                                    </button>
+                                </form>
+                                {% elif task.status == 'Completed' %}
+                                <span class="text-success small fw-semibold">
+                                    <i class="bi bi-check-all me-1"></i> Task Finished
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end pe-3">
+                                <a href="{{ url_for('help_requests.view_request', request_id=task.id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> Details
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="p-4 text-center text-muted">
+                <i class="bi bi-clipboard2-check fs-2 text-secondary mb-2 d-block"></i>
+                You haven't accepted any community tasks yet. Check the open requests below to help someone today!
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Donor Resources and Volunteer Item Requests -->
+    <div class="card shadow-sm border-0 mb-5">
+        <div class="card-header bg-white py-3 border-bottom">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <h5 class="fw-bold mb-0 text-dark">
+                        <i class="bi bi-box-seam me-2 text-warning"></i>Donor Resources
+                    </h5>
+                    <small class="text-muted">Available supplies shared by community donors</small>
+                </div>
+                <form method="GET" action="{{ url_for('volunteers.volunteer_dashboard') }}" class="d-flex flex-wrap gap-2">
+                    <input type="hidden" name="category" value="{{ selected_category }}">
+                    <input type="hidden" name="locality" value="{{ selected_locality }}">
+                    <select name="resource_category" class="form-select form-select-sm" aria-label="Filter donor resources by category">
+                        <option value="">All Resource Categories</option>
+                        {% for category in resource_categories %}
+                        <option value="{{ category }}" {% if selected_resource_category == category %}selected{% endif %}>{{ category }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="text" name="resource_locality" class="form-control form-control-sm" placeholder="Pickup locality" value="{{ selected_resource_locality }}" aria-label="Filter donor resources by pickup location">
+                    <button type="submit" class="btn btn-sm btn-primary"><i class="bi bi-funnel-fill me-1"></i>Filter</button>
+                    {% if selected_resource_category or selected_resource_locality %}
+                    <a href="{{ url_for('volunteers.volunteer_dashboard', category=selected_category, locality=selected_locality) }}" class="btn btn-sm btn-outline-secondary">Reset</a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+        <div class="card-body p-4">
+            {% if available_resources %}
+            <div class="row g-3">
+                {% for resource in available_resources %}
+                <div class="col-lg-6">
+                    <article class="card h-100 border shadow-sm p-3">
+                        <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                            <span class="category-badge">{{ resource.category }}</span>
+                            <span class="badge badge-status badge-status-available">{{ resource.quantity }} {{ resource.unit }} available</span>
+                        </div>
+                        <h6 class="fw-bold text-dark mb-2">{{ resource.name or resource.description.splitlines()[0] }}</h6>
+                        <p class="text-secondary small mb-3">{{ resource.description }}</p>
+                        <div class="small text-muted border-top pt-2 mb-3">
+                            <div><i class="bi bi-geo-alt-fill text-danger me-1"></i>Pickup location: {{ resource.locality }}</div>
+                            {% if resource.available_until %}
+                            <div><i class="bi bi-calendar-event me-1"></i>Available until {{ resource.available_until.strftime('%d %b %Y') }}</div>
+                            {% endif %}
+                            {% if resource.expiry_date %}
+                            <div><i class="bi bi-calendar-x me-1"></i>Expiry: {{ resource.expiry_date.strftime('%d %b %Y') }}</div>
+                            {% endif %}
+                        </div>
+                        {% if current_user.role == 'volunteer' %}
+                        <form method="POST" action="{{ url_for('volunteers.request_resource', resource_id=resource.id) }}" class="d-flex align-items-end gap-2 mt-auto">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <div class="flex-grow-1">
+                                <label class="form-label small fw-semibold mb-1" for="resource-quantity-{{ resource.id }}">Quantity ({{ resource.unit }})</label>
+                                <input id="resource-quantity-{{ resource.id }}" type="number" name="quantity" class="form-control form-control-sm" min="0.01" max="{{ resource.quantity }}" step="0.01" value="1" required>
+                            </div>
+                            <button type="submit" class="btn btn-sm btn-warning fw-bold text-dark"><i class="bi bi-send me-1"></i>Request Items</button>
+                        </form>
+                        {% endif %}
+                    </article>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="bi bi-box-seam empty-state-icon"></i>
+                <h6 class="fw-bold text-dark">No donor resources available</h6>
+                <p class="text-muted small mb-0">No in-stock resources match these filters right now.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-5">
+        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-truck me-2 text-primary"></i>My Donor Resource Requests</h5>
+            <span class="badge bg-secondary">{{ resource_requests|length }} Requests</span>
+        </div>
+        <div class="card-body p-0">
+            {% if resource_requests %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light"><tr><th class="ps-3">Resource</th><th>Quantity</th><th>Pickup Location</th><th>Status</th><th class="text-end pe-3">Next Step</th></tr></thead>
+                    <tbody>
+                        {% for item_request in resource_requests %}
+                        <tr>
+                            <td class="ps-3"><span class="category-badge">{{ item_request.resource.category }}</span><div class="fw-semibold mt-1">{{ item_request.resource.name or item_request.resource.description.splitlines()[0] }}</div><div class="small text-secondary">{{ item_request.resource.description }}</div></td>
+                            <td>{{ item_request.quantity }} {{ item_request.resource.unit }}</td>
+                            <td>{{ item_request.resource.locality }}</td>
+                            <td><span class="badge {% if item_request.status == 'Approved' %}bg-success{% elif item_request.status == 'Rejected' %}bg-danger{% elif item_request.status == 'Pending' %}bg-warning text-dark{% else %}bg-primary{% endif %}">{{ item_request.status }}</span></td>
+                            <td class="text-end pe-3">
+                                {% if item_request.status == 'Pending' %}
+                                <span class="small text-muted">Awaiting donor approval</span>
+                                {% elif item_request.status == 'Approved' or item_request.status == 'Collected' %}
+                                <form method="POST" action="{{ url_for('volunteers.update_resource_request_status', resource_request_id=item_request.id) }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    {% if item_request.status == 'Approved' %}
+                                    <input type="hidden" name="new_status" value="Collected">
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">Mark Collected</button>
+                                    {% else %}
+                                    <input type="hidden" name="new_status" value="Delivered">
+                                    <button type="submit" class="btn btn-sm btn-success">Mark Delivered</button>
+                                    {% endif %}
+                                </form>
+                                {% else %}
+                                <span class="small text-muted">No action required</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="p-4 text-center text-muted">You have not requested any donor resources yet.</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- SECTION 2: OPEN COMMUNITY REQUESTS FOR VOLUNTEERING -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-3 border-bottom">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <h5 class="fw-bold mb-0 text-dark">
+                        <i class="bi bi-hand-index-thumb-fill me-2 text-warning"></i>Available Open Requests
+                    </h5>
+                    <small class="text-muted">Ranked by Urgency, Locality Match, Emergency Boost, and Age</small>
+                </div>
+
+                <!-- Filter Controls -->
+                <form method="GET" action="{{ url_for('volunteers.volunteer_dashboard') }}" class="d-flex flex-wrap gap-2">
+                    <input type="hidden" name="resource_category" value="{{ selected_resource_category }}">
+                    <input type="hidden" name="resource_locality" value="{{ selected_resource_locality }}">
+                    <select name="category" class="form-select form-select-sm" style="min-width: 180px;">
+                        <option value="">All Categories</option>
+                        {% for cat in SERVICE_CATEGORIES %}
+                        <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>{{ cat }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <input type="text" name="locality" class="form-control form-control-sm" placeholder="Filter by locality" value="{{ selected_locality }}" style="max-width: 160px;">
+
+                    <button type="submit" class="btn btn-sm btn-primary">
+                        <i class="bi bi-funnel-fill me-1"></i> Filter
+                    </button>
+                    {% if selected_category or selected_locality %}
+                    <a href="{{ url_for('volunteers.volunteer_dashboard', resource_category=selected_resource_category, resource_locality=selected_resource_locality) }}" class="btn btn-sm btn-outline-secondary">Reset</a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+
+        <div class="card-body p-4">
+            {% if open_requests %}
+            <div class="row g-4">
+                {% for req in open_requests %}
+                <div class="col-lg-6">
+                    <div class="card h-100 border shadow-sm p-3 hover-lift {% if req.urgency == 'Critical' %}border-danger border-2{% elif req.urgency == 'Urgent' %}border-warning{% endif %}">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="category-badge">{{ req.category }}</span>
+                            <div class="d-flex gap-1">
+                                {% if req.urgency == 'Critical' %}
+                                    <span class="badge badge-urgency-critical">Critical</span>
+                                {% elif req.urgency == 'Urgent' %}
+                                    <span class="badge badge-urgency-urgent">Urgent</span>
+                                {% else %}
+                                    <span class="badge badge-urgency-normal">Normal</span>
+                                {% endif %}
+
+                                <!-- Locality Match Pill -->
+                                {% if current_user.locality.lower() in req.locality.lower() or req.locality.lower() in current_user.locality.lower() %}
+                                    <span class="badge bg-success bg-opacity-25 text-success border border-success" title="Nearby Match">
+                                        <i class="bi bi-geo-fill"></i> Near You
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <h5 class="fw-bold mb-2 text-dark">{{ req.title }}</h5>
+                        <p class="text-secondary small mb-3 flex-grow-1">
+                            {{ req.description }}
+                        </p>
+
+                        <div class="d-flex flex-wrap justify-content-between align-items-center pt-2 border-top text-muted small mb-3">
+                            <div>
+                                <i class="bi bi-geo-alt-fill text-danger me-1"></i><strong>{{ req.locality }}</strong>
+                            </div>
+                            <div>
+                                <i class="bi bi-clock me-1"></i>{{ req.age_in_hours }}h ago
+                            </div>
+                            {% if req.deadline %}
+                            <div>
+                                <i class="bi bi-calendar-event me-1 text-primary"></i>Needed: {{ req.deadline.strftime('%d %b') }}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Atomic Accept Button (Concurrency Protected) -->
+                        <div class="d-flex gap-2">
+                            <form method="POST" action="{{ url_for('volunteers.accept_request', request_id=req.id) }}" class="flex-grow-1" data-confirm="Accept this task? You will coordinate directly with the requestor.">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-success btn-sm w-100 fw-bold">
+                                    <i class="bi bi-hand-thumbs-up-fill me-1"></i> Accept Task
+                                </button>
+                            </form>
+                            <a href="{{ url_for('help_requests.view_request', request_id=req.id) }}" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-info-circle"></i> Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="bi bi-emoji-smile empty-state-icon text-success"></i>
+                <h5 class="fw-bold text-dark">No Open Requests Available</h5>
+                <p class="text-muted small mb-0">
+                    All current community requests have been accepted by volunteers or none match your filter. Check back soon!
+                </p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

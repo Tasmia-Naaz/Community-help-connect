@@ -1,0 +1,201 @@
+/* ==============================================================
+   COMMUNITY HELP CONNECT - CUSTOM STYLES
+   Colors, Badges, Cards, Animations, and Layout Utilities
+   ============================================================== */
+
+:root {
+    --primary-color: #0d6efd;
+    --primary-hover: #0b5ed7;
+    --secondary-color: #6c757d;
+    --success-color: #198754;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #0dcaf0;
+    --dark-color: #212529;
+    --light-bg: #f8f9fa;
+    --card-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    --hover-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.12);
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #2b3035;
+    background-color: #f8fafc;
+}
+
+/* Navbar Enhancements */
+.main-navbar {
+    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%) !important;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.brand-icon {
+    font-size: 1.35rem;
+}
+
+/* Emergency Banner Pulsing */
+@keyframes pulseBanner {
+    0% { background-color: #dc2626; }
+    50% { background-color: #b91c1c; }
+    100% { background-color: #dc2626; }
+}
+
+.animate-pulse {
+    animation: pulseBanner 3s infinite ease-in-out;
+}
+
+/* Card Styling */
+.card {
+    border-radius: 0.75rem;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: var(--card-shadow);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    box-shadow: var(--hover-shadow);
+}
+
+.card.hover-lift:hover {
+    transform: translateY(-3px);
+}
+
+/* Dashboard Metric Stat Cards */
+.stat-card {
+    border-left: 4px solid var(--primary-color);
+    background: #ffffff;
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+}
+
+.stat-card.stat-pending { border-left-color: #f59e0b; }
+.stat-card.stat-active { border-left-color: #3b82f6; }
+.stat-card.stat-completed { border-left-color: #10b981; }
+.stat-card.stat-urgent { border-left-color: #ef4444; }
+
+.stat-card .stat-value {
+    font-size: 2.25rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+/* Status Badges */
+.badge-status {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.35em 0.75em;
+    border-radius: 50rem;
+    text-transform: capitalize;
+}
+
+.badge-status-pending { background-color: #fef3c7; color: #92400e; }
+.badge-status-accepted { background-color: #e0e7ff; color: #3730a3; }
+.badge-status-inprogress { background-color: #dbeafe; color: #1e40af; }
+.badge-status-completed { background-color: #d1fae5; color: #065f46; }
+.badge-status-cancelled { background-color: #fee2e2; color: #991b1b; }
+.badge-status-available { background-color: #dcfce7; color: #166534; }
+.badge-status-reserved { background-color: #fef9c3; color: #854d0e; }
+.badge-status-collected { background-color: #e0f2fe; color: #075985; }
+.badge-status-distributed { background-color: #ede9fe; color: #5b21b6; }
+.badge-status-withdrawn { background-color: #f3f4f6; color: #4b5563; }
+
+/* Urgency Badges */
+.badge-urgency-critical {
+    background-color: #ef4444;
+    color: #ffffff;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    animation: gentleFlash 2s infinite ease-in-out;
+}
+
+.badge-urgency-urgent {
+    background-color: #f97316;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.badge-urgency-normal {
+    background-color: #64748b;
+    color: #ffffff;
+}
+
+@keyframes gentleFlash {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.85; }
+}
+
+/* Category Icons & Tags */
+.category-badge {
+    background-color: #f1f5f9;
+    color: #334155;
+    font-size: 0.78rem;
+    font-weight: 600;
+    border-radius: 0.375rem;
+    padding: 0.25rem 0.6rem;
+    border: 1px solid #e2e8f0;
+}
+
+/* Timeline Audit Log for Status History */
+.timeline {
+    position: relative;
+    padding-left: 2rem;
+    margin: 1rem 0;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 0.75rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #cbd5e1;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.timeline-dot {
+    position: absolute;
+    left: -2rem;
+    top: 0.25rem;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background-color: #3b82f6;
+    border: 3px solid #ffffff;
+    box-shadow: 0 0 0 1px #cbd5e1;
+}
+
+/* Tables */
+.table-hover tbody tr:hover {
+    background-color: rgba(59, 130, 246, 0.04);
+}
+
+/* Responsive utilities */
+.text-hover-light:hover {
+    color: #ffffff !important;
+}
+
+/* Form Helper Hints */
+.form-text {
+    font-size: 0.825rem;
+    color: #64748b;
+}
+
+/* Empty States */
+.empty-state {
+    padding: 3rem 1.5rem;
+    text-align: center;
+    background: #ffffff;
+    border-radius: 0.75rem;
+    border: 1px dashed #cbd5e1;
+}
+
+.empty-state-icon {
+    font-size: 3rem;
+    color: #94a3b8;
+    margin-bottom: 1rem;
+}

@@ -1,0 +1,5 @@
+# pyrefly configuration — https://pyrefly.org
+# Suppress Flask-SQLAlchemy metaclass __init__ false positives
+
+[errors]
+"unexpected-keyword" = false

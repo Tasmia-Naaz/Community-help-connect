@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Post Help Request - Community Help Connect{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow border-0 rounded-4">
+                <div class="card-header bg-primary text-white p-4 rounded-top-4">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h3 class="fw-bold mb-1">
+                                <i class="bi bi-life-preserver me-2 text-warning"></i>Submit a Help Request
+                            </h3>
+                            <p class="small text-white-50 mb-0">Describe what you need so nearby community volunteers can assist</p>
+                        </div>
+                        <a href="{{ url_for('help_requests.seeker_dashboard') }}" class="btn btn-outline-light btn-sm">
+                            <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    <form method="POST" action="{{ url_for('help_requests.new_request') }}" novalidate>
+                        {{ form.hidden_tag() }}
+
+                        <!-- Service Category -->
+                        <div class="mb-3">
+                            {{ form.category.label(class="form-label fw-semibold") }}
+                            {{ form.category(class="form-select" + (" is-invalid" if form.category.errors else "")) }}
+                            <div class="form-text">Choose which of our 6 service categories matches your need.</div>
+                            {% for error in form.category.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Title -->
+                        <div class="mb-3">
+                            {{ form.title.label(class="form-label fw-semibold") }}
+                            {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else ""), placeholder="e.g. Urgent prescription pickup from pharmacy on 100ft road") }}
+                            {% for error in form.title.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-3">
+                            {{ form.description.label(class="form-label fw-semibold") }}
+                            {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows="5", placeholder="Please provide specific, clear details: exact items required, time preferences, and any special requirements...") }}
+                            {% for error in form.description.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <!-- Urgency -->
+                            <div class="col-md-6">
+                                {{ form.urgency.label(class="form-label fw-semibold") }}
+                                {{ form.urgency(class="form-select" + (" is-invalid" if form.urgency.errors else "")) }}
+                                <div class="form-text">Critical and Urgent requests receive priority volunteer matching.</div>
+                                {% for error in form.urgency.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- Locality -->
+                            <div class="col-md-6">
+                                {{ form.locality.label(class="form-label fw-semibold") }}
+                                {{ form.locality(class="form-control" + (" is-invalid" if form.locality.errors else ""), placeholder="e.g. Indiranagar, Sector 4") }}
+                                <div class="form-text">General area used to locate nearby volunteers.</div>
+                                {% for error in form.locality.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <!-- Deadline -->
+                            <div class="col-md-6">
+                                {{ form.deadline.label(class="form-label fw-semibold") }}
+                                {{ form.deadline(class="form-control" + (" is-invalid" if form.deadline.errors else "")) }}
+                                <div class="form-text">Optional date by which this assistance is needed.</div>
+                                {% for error in form.deadline.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- Contact Sharing Preference -->
+                            <div class="col-md-6">
+                                {{ form.contact_preference.label(class="form-label fw-semibold") }}
+                                {{ form.contact_preference(class="form-select" + (" is-invalid" if form.contact_preference.errors else "")) }}
+                                <div class="form-text">Control who can view your phone number and email.</div>
+                                {% for error in form.contact_preference.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Safety & Responsibility Notice -->
+                        <div class="alert alert-warning border small text-dark mb-4">
+                            <strong><i class="bi bi-shield-exclamation me-1"></i> Safety Notice:</strong>
+                            Never wire funds or exchange credit card numbers. Community Help Connect is built for peer neighbor assistance, and does not replace emergency 112/911 ambulance services.
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('help_requests.seeker_dashboard') }}" class="btn btn-outline-secondary px-4">Cancel</a>
+                            {{ form.submit(class="btn btn-warning fw-bold text-dark px-4 shadow-sm") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

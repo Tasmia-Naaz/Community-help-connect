@@ -1,0 +1,400 @@
+{% extends "base.html" %}
+
+{% block title %}Administrator Control Center - Community Help Connect{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-5 py-4">
+    <!-- Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="bi bi-shield-lock-fill text-danger me-2"></i>Administrator Control Center
+            </h2>
+            <p class="text-secondary mb-0">
+                System oversight, user account verification, crisis emergency dispatch, and audit logging.
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            {% if active_emergency and active_emergency.is_active %}
+            <form method="POST" action="{{ url_for('admin.deactivate_emergency', event_id=active_emergency.id) }}" data-confirm="Deactivate the active Emergency Mode across the community?">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-outline-danger fw-bold shadow-sm">
+                    <i class="bi bi-x-octagon-fill me-1"></i> Deactivate Emergency Mode
+                </button>
+            </form>
+            {% else %}
+            <a href="{{ url_for('admin.declare_emergency') }}" class="btn btn-danger fw-bold shadow-sm">
+                <i class="bi bi-broadcast me-1"></i> Declare Emergency Event
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Active Crisis Banner Card (if emergency active) -->
+    {% if active_emergency and active_emergency.is_active %}
+    <div class="card bg-danger text-white border-0 shadow mb-4">
+        <div class="card-body p-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <span class="badge bg-dark text-warning fs-6 mb-2">CRISIS MODE ACTIVATED</span>
+                <h4 class="fw-bold mb-1">{{ active_emergency.emergency_type }} &mdash; {{ active_emergency.affected_locality }}</h4>
+                <p class="mb-0 text-white-50">{{ active_emergency.description }}</p>
+                <small class="text-white-50">Activated: {{ active_emergency.activated_at.strftime('%d %b %Y, %H:%M:%S') if active_emergency.activated_at else '' }}</small>
+            </div>
+            <form method="POST" action="{{ url_for('admin.deactivate_emergency', event_id=active_emergency.id) }}" data-confirm="Deactivate this emergency event?">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-light text-danger fw-bold px-4">
+                    End Emergency Mode
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Top KPI Metrics -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-lg-2">
+            <div class="stat-card shadow-sm">
+                <div class="text-secondary small fw-semibold text-uppercase">Total Users</div>
+                <div class="stat-value text-dark">{{ total_users }}</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-2">
+            <div class="stat-card shadow-sm">
+                <div class="text-secondary small fw-semibold text-uppercase">Total Requests</div>
+                <div class="stat-value text-dark">{{ total_requests }}</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-2">
+            <div class="stat-card stat-pending shadow-sm">
+                <div class="text-warning small fw-semibold text-uppercase">Open / Pending</div>
+                <div class="stat-value text-warning">{{ open_requests }}</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-2">
+            <div class="stat-card stat-active shadow-sm">
+                <div class="text-primary small fw-semibold text-uppercase">In Progress</div>
+                <div class="stat-value text-primary">{{ in_progress_requests }}</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-2">
+            <div class="stat-card stat-completed shadow-sm">
+                <div class="text-success small fw-semibold text-uppercase">Completed</div>
+                <div class="stat-value text-success">{{ completed_requests }}</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-2">
+            <div class="stat-card stat-urgent shadow-sm">
+                <div class="text-danger small fw-semibold text-uppercase">Available Resources</div>
+                <div class="stat-value text-danger">{{ active_resources }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs Navigation for Management -->
+    <ul class="nav nav-pills mb-4" id="adminTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="users-tab" data-bs-toggle="pill" data-bs-target="#tab-users" type="button" role="tab">
+                <i class="bi bi-people me-1"></i> User Accounts ({{ users|length }})
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="requests-tab" data-bs-toggle="pill" data-bs-target="#tab-requests" type="button" role="tab">
+                <i class="bi bi-life-preserver me-1"></i> Help Requests ({{ requests|length }})
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="resources-tab" data-bs-toggle="pill" data-bs-target="#tab-resources" type="button" role="tab">
+                <i class="bi bi-box-seam me-1"></i> Resource Listings ({{ resources|length }})
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="emergency-tab" data-bs-toggle="pill" data-bs-target="#tab-emergencies" type="button" role="tab">
+                <i class="bi bi-broadcast me-1 text-danger"></i> Emergency Events Log
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="audit-tab" data-bs-toggle="pill" data-bs-target="#tab-audit" type="button" role="tab">
+                <i class="bi bi-journal-text me-1"></i> System Status Audit
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="adminTabContent">
+        <!-- 1. USER ACCOUNTS TAB -->
+        <div class="tab-pane fade show active" id="tab-users" role="tabpanel">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <h5 class="fw-bold mb-0 text-dark">User Moderation & Access Control</h5>
+                    <form method="GET" action="{{ url_for('admin.dashboard') }}" class="d-flex gap-2">
+                        <input type="text" name="user_search" class="form-control form-control-sm" placeholder="Search name, email, locality..." value="{{ user_search }}" style="min-width: 240px;">
+                        <button type="submit" class="btn btn-sm btn-primary">Search</button>
+                        {% if user_search %}
+                        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-sm btn-outline-secondary">Clear</a>
+                        {% endif %}
+                    </form>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">User</th>
+                                    <th>Role</th>
+                                    <th>Locality</th>
+                                    <th>Contact</th>
+                                    <th>Verification</th>
+                                    <th>Status</th>
+                                    <th class="text-end pe-3">Moderation Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for u in users %}
+                                <tr>
+                                    <td class="ps-3">
+                                        <strong class="text-dark">{{ u.full_name }}</strong>
+                                        <div class="text-muted small">{{ u.email }}</div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary text-capitalize">{{ u.role.replace('_', ' ') }}</span>
+                                    </td>
+                                    <td><small><i class="bi bi-geo-alt me-1 text-danger"></i>{{ u.locality }}</small></td>
+                                    <td><small>{{ u.phone }}</small></td>
+                                    <td>
+                                        {% if u.is_verified %}
+                                            <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Verified</span>
+                                        {% else %}
+                                            <span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i>Unverified</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if u.is_suspended %}
+                                            <span class="badge bg-danger"><i class="bi bi-slash-circle me-1"></i>Suspended</span>
+                                        {% else %}
+                                            <span class="badge bg-success bg-opacity-25 text-success">Active</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end pe-3">
+                                        {% if u.id != current_user.id %}
+                                        <div class="btn-group btn-group-sm">
+                                            <!-- Toggle Verification -->
+                                            <form method="POST" action="{{ url_for('admin.toggle_user_verification', user_id=u.id) }}" class="d-inline">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                <button type="submit" class="btn btn-outline-secondary btn-sm" title="Toggle verification">
+                                                    {{ 'Unverify' if u.is_verified else 'Verify' }}
+                                                </button>
+                                            </form>
+                                            <!-- Toggle Suspension -->
+                                            <form method="POST" action="{{ url_for('admin.toggle_user_suspension', user_id=u.id) }}" class="d-inline ms-1" data-confirm="Are you sure you want to change suspension status for {{ u.email }}?">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                <button type="submit" class="btn btn-{{ 'warning' if u.is_suspended else 'outline-danger' }} btn-sm">
+                                                    {{ 'Reactivate' if u.is_suspended else 'Suspend' }}
+                                                </button>
+                                            </form>
+                                        </div>
+                                        {% else %}
+                                        <span class="badge bg-light text-muted">Current Admin</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. HELP REQUESTS TAB -->
+        <div class="tab-pane fade" id="tab-requests" role="tabpanel">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="fw-bold mb-0 text-dark">All Community Help Requests</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">ID / Title</th>
+                                    <th>Category</th>
+                                    <th>Urgency</th>
+                                    <th>Seeker</th>
+                                    <th>Locality</th>
+                                    <th>Status</th>
+                                    <th>Volunteer</th>
+                                    <th class="text-end pe-3">View</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in requests %}
+                                <tr>
+                                    <td class="ps-3">
+                                        <a href="{{ url_for('help_requests.view_request', request_id=r.id) }}" class="fw-bold text-dark text-decoration-none">
+                                            #{{ r.id }} - {{ r.title }}
+                                        </a>
+                                    </td>
+                                    <td><span class="category-badge">{{ r.category }}</span></td>
+                                    <td>
+                                        <span class="badge {% if r.urgency == 'Critical' %}badge-urgency-critical{% elif r.urgency == 'Urgent' %}badge-urgency-urgent{% else %}badge-urgency-normal{% endif %}">
+                                            {{ r.urgency }}
+                                        </span>
+                                    </td>
+                                    <td><small>{{ r.seeker.full_name }}</small></td>
+                                    <td><small>{{ r.locality }}</small></td>
+                                    <td>
+                                        <span class="badge badge-status badge-status-{{ r.status.lower().replace(' ', '') }}">{{ r.status }}</span>
+                                    </td>
+                                    <td><small>{{ r.assigned_volunteer.full_name if r.assigned_volunteer else 'Unassigned' }}</small></td>
+                                    <td class="text-end pe-3">
+                                        <a href="{{ url_for('help_requests.view_request', request_id=r.id) }}" class="btn btn-sm btn-outline-primary">
+                                            Inspect
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. RESOURCE LISTINGS TAB -->
+        <div class="tab-pane fade" id="tab-resources" role="tabpanel">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="fw-bold mb-0 text-dark">All Reported Resources</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">ID / Description</th>
+                                    <th>Category</th>
+                                    <th>Quantity</th>
+                                    <th>Donor</th>
+                                    <th>Locality</th>
+                                    <th>Status</th>
+                                    <th class="text-end pe-3">Inspect</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for res in resources %}
+                                <tr>
+                                    <td class="ps-3">
+                                        <a href="{{ url_for('donations.view_resource', resource_id=res.id) }}" class="fw-bold text-dark text-decoration-none">
+                                            #{{ res.id }} - {{ res.name or (res.description[:60] ~ ('...' if res.description|length > 60 else '')) }}
+                                        </a>
+                                    </td>
+                                    <td><span class="category-badge">{{ res.category }}</span></td>
+                                    <td><strong>{{ res.quantity }}</strong> <span class="small text-muted">{{ res.unit }}</span></td>
+                                    <td><small>{{ res.donor.full_name }}</small></td>
+                                    <td><small>{{ res.locality }}</small></td>
+                                    <td><span class="badge badge-status badge-status-{{ res.status.lower() }}">{{ res.status }}</span></td>
+                                    <td class="text-end pe-3">
+                                        <a href="{{ url_for('donations.view_resource', resource_id=res.id) }}" class="btn btn-sm btn-outline-primary">
+                                            Inspect
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. EMERGENCY EVENTS TAB -->
+        <div class="tab-pane fade" id="tab-emergencies" role="tabpanel">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0 text-dark">Emergency Event Broadcast History</h5>
+                    <a href="{{ url_for('admin.declare_emergency') }}" class="btn btn-danger btn-sm fw-bold">
+                        <i class="bi bi-plus-circle me-1"></i> New Emergency Event
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">Emergency Type</th>
+                                    <th>Affected Locality</th>
+                                    <th>Severity</th>
+                                    <th>Status</th>
+                                    <th>Activated At</th>
+                                    <th>Deactivated At</th>
+                                    <th class="text-end pe-3">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for e in past_emergencies %}
+                                <tr>
+                                    <td class="ps-3"><strong>{{ e.emergency_type }}</strong></td>
+                                    <td><span class="badge bg-dark">{{ e.affected_locality }}</span></td>
+                                    <td><span class="badge bg-danger">{{ e.severity }}</span></td>
+                                    <td>
+                                        {% if e.is_active %}
+                                            <span class="badge bg-danger animate-pulse">ACTIVE NOW</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Closed</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="small">{{ e.activated_at.strftime('%d %b %Y, %H:%M') if e.activated_at else '' }}</td>
+                                    <td class="small">{{ e.deactivated_at.strftime('%d %b %Y, %H:%M') if e.deactivated_at else 'Active' }}</td>
+                                    <td class="text-end pe-3">
+                                        {% if e.is_active %}
+                                        <form method="POST" action="{{ url_for('admin.deactivate_emergency', event_id=e.id) }}" class="d-inline" data-confirm="Deactivate this emergency mode?">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Deactivate</button>
+                                        </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. STATUS AUDIT LOG TAB -->
+        <div class="tab-pane fade" id="tab-audit" role="tabpanel">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="fw-bold mb-0 text-dark">System-Wide Status Audit Log (Latest 20 Entries)</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">Timestamp</th>
+                                    <th>Entity</th>
+                                    <th>Transition</th>
+                                    <th>Changed By</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for h in recent_history %}
+                                <tr>
+                                    <td class="ps-3 small text-muted">{{ h.created_at.strftime('%d %b %Y, %H:%M:%S') if h.created_at else '' }}</td>
+                                    <td><span class="badge bg-light text-dark border">{{ h.entity_type }} #{{ h.entity_id }}</span></td>
+                                    <td><strong>{{ h.previous_status }}</strong> &rarr; <span class="text-primary fw-bold">{{ h.new_status }}</span></td>
+                                    <td><small>{{ h.changed_by.full_name if h.changed_by else 'System / Trigger' }}</small></td>
+                                    <td class="small text-secondary">{{ h.notes or '' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

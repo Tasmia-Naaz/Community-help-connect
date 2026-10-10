@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}How It Works - Community Help Connect{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold">How Community Help Connect Works</h1>
+        <p class="lead text-secondary max-w-700 mx-auto">
+            A step-by-step walkthrough of our role-based workflows, transparent matching algorithm, and privacy
+            safeguards.
+        </p>
+    </div>
+
+    <!-- 3 Roles Walkthrough -->
+    <div class="row g-4 mb-5">
+        <!-- Role 1: Help Seeker -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-person-heart me-2"></i>For Help Seekers</h5>
+                </div>
+                <div class="card-body">
+                    <ol class="ps-3 small text-secondary">
+                        <li class="mb-3">
+                            <strong>Submit Request:</strong> Select one of the 6 categories, describe your need, specify
+                            urgency level (Normal, Urgent, or Critical), and enter your locality.
+                        </li>
+                        <li class="mb-3">
+                            <strong>Choose Privacy Level:</strong> Keep your contact details hidden, visible only to the
+                            accepted volunteer, or public.
+                        </li>
+                        <li class="mb-3">
+                            <strong>Track Progress:</strong> Monitor real-time status transitions: Pending &rarr;
+                            Accepted &rarr; In Progress &rarr; Completed.
+                        </li>
+                        <li class="mb-2">
+                            <strong>Manage Tasks:</strong> Cancel a request if assistance is no longer needed before or
+                            during progress.
+                        </li>
+                    </ol>
+                </div>
+                <div class="card-footer bg-light border-0">
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-outline-primary btn-sm w-100">Register as
+                        Help Seeker</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Role 2: Volunteer -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-header bg-success text-white py-3">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-person-check-fill me-2"></i>For Volunteers</h5>
+                </div>
+                <div class="card-body">
+                    <ol class="ps-3 small text-secondary">
+                        <li class="mb-3">
+                            <strong>Smart Matching:</strong> The system automatically prioritizes nearby tasks and
+                            urgent/critical needs in your locality.
+                        </li>
+                        <li class="mb-3">
+                            <strong>Accept Open Tasks:</strong> Concurrency-safe atomic database transactions ensure
+                            only one volunteer can accept each task.
+                        </li>
+                        <li class="mb-3">
+                            <strong>Direct Coordination:</strong> Access the seeker's contact info (if authorized) to
+                            coordinate pickup, delivery, or transit.
+                        </li>
+                        <li class="mb-2">
+                            <strong>Update Lifecycle:</strong> Move the task to "In Progress" and finally "Completed"
+                            once the task is finished.
+                        </li>
+                    </ol>
+                </div>
+                <div class="card-footer bg-light border-0">
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-outline-success btn-sm w-100">Register as
+                        Volunteer</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Role 3: Donor -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-header bg-warning text-dark py-3">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-gift-fill me-2"></i>For Resource Donors</h5>
+                </div>
+                <div class="card-body">
+                    <ol class="ps-3 small text-secondary">
+                        <li class="mb-3">
+                            <strong>Report Surplus:</strong> List available supplies, meals, wheelchairs, or blankets
+                            with quantity and pickup instructions.
+                        </li>
+                        <li class="mb-3">
+                            <strong>Perishable Safeguards:</strong> Enter best-before expiry dates for food. Expired
+                            items are automatically withdrawn.
+                        </li>
+                        <li class="mb-3">
+                            <strong>Coordinate Collection:</strong> Verified volunteers can reserve and collect items
+                            for community distribution.
+                        </li>
+                        <li class="mb-2">
+                            <strong>Listing Control:</strong> Easily withdraw, pause, or update listings from your
+                            personal donor dashboard.
+                        </li>
+                    </ol>
+                </div>
+                <div class="card-footer bg-light border-0">
+                    <a href="{{ url_for('auth.register') }}"
+                        class="btn btn-outline-warning text-dark btn-sm w-100">Register as Donor</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Technical Transparency Section for College Viva -->
+    <div class="card border-primary shadow-sm bg-white p-4">
+        <h4 class="fw-bold text-primary mb-3">
+            <i class="bi bi-code-slash me-2"></i>Under the Hood: Technical Architecture (Viva Highlights)
+        </h4>
+        <div class="row g-4 small text-secondary">
+            <div class="col-md-6">
+                <h6 class="fw-bold text-dark"><i class="bi bi-cpu me-1 text-primary"></i> Rule-Based Matching Algorithm
+                </h6>
+                <p>
+                    Rather than relying on unexplainable machine learning or costly third-party map APIs, matching is
+                    powered by deterministic heuristics: Locality Match (+40 pts), Active Emergency Zone (+60 pts),
+                    Urgency Level (Critical: +100, Urgent: +50, Normal: +10), and Request Age (+1 pt per 2 hours).
+                </p>
+            </div>
+            <div class="col-md-6">
+                <h6 class="fw-bold text-dark"><i class="bi bi-lock-fill me-1 text-danger"></i> Atomic Duplicate
+                    Acceptance Prevention</h6>
+                <p>
+                    To prevent race conditions where two volunteers click "Accept" simultaneously, the backend utilizes
+                    SQL row-level locking (<code>with_for_update()</code>) inside an isolated database transaction. If
+                    another volunteer has already accepted, the transaction rolls back cleanly.
+                </p>
+            </div>
+            <div class="col-md-6">
+                <h6 class="fw-bold text-dark"><i class="bi bi-journal-check me-1 text-success"></i> Comprehensive Status
+                    History Audit Log</h6>
+                <p>
+                    Every transition (Created, Accepted, In Progress, Completed, Cancelled, Withdrawn) generates an
+                    immutable record in the <code>status_history</code> table with previous status, new status,
+                    timestamp, and the actor's user ID.
+                </p>
+            </div>
+            <div class="col-md-6">
+                <h6 class="fw-bold text-dark"><i class="bi bi-shield-lock-fill me-1 text-warning"></i> Role-Based Access
+                    Control (RBAC)</h6>
+                <p>
+                    All routes enforce role verification on the server with custom Python decorators
+                    (<code>@login_required</code>, <code>@role_required</code>, <code>@admin_required</code>). URL
+                    manipulation and cross-user tampering are strictly prevented.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

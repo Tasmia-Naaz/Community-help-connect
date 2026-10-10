@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}Request Details #{{ request_obj.id }} - Community Help Connect{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb & Back -->
+    <div class="mb-3 d-flex justify-content-between align-items-center">
+        <a href="javascript:history.back()" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Back
+        </a>
+        <span class="text-muted small">Request ID: #{{ request_obj.id }} &bull; Created {{ request_obj.created_at.strftime('%d %b %Y, %H:%M') if request_obj.created_at else '' }}</span>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Request Information -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <div>
+                        <span class="category-badge me-2">{{ request_obj.category }}</span>
+                        {% if request_obj.urgency == 'Critical' %}
+                            <span class="badge badge-urgency-critical px-2 py-1">Critical Urgency</span>
+                        {% elif request_obj.urgency == 'Urgent' %}
+                            <span class="badge badge-urgency-urgent px-2 py-1">Urgent</span>
+                        {% else %}
+                            <span class="badge badge-urgency-normal px-2 py-1">Normal</span>
+                        {% endif %}
+                    </div>
+                    <div>
+                        {% if request_obj.status == 'Pending' %}
+                            <span class="badge badge-status badge-status-pending fs-6">Pending</span>
+                        {% elif request_obj.status == 'Accepted' %}
+                            <span class="badge badge-status badge-status-accepted fs-6">Accepted</span>
+                        {% elif request_obj.status == 'In Progress' %}
+                            <span class="badge badge-status badge-status-inprogress fs-6">In Progress</span>
+                        {% elif request_obj.status == 'Completed' %}
+                            <span class="badge badge-status badge-status-completed fs-6">Completed</span>
+                        {% elif request_obj.status == 'Cancelled' %}
+                            <span class="badge badge-status badge-status-cancelled fs-6">Cancelled</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <h3 class="fw-bold text-dark mb-3">{{ request_obj.title }}</h3>
+                    <div class="p-3 bg-light rounded-3 mb-4 text-secondary lh-base">
+                        {{ request_obj.description }}
+                    </div>
+
+                    <!-- Details Grid -->
+                    <div class="row g-3 border-top pt-3 small text-secondary">
+                        <div class="col-sm-6">
+                            <strong><i class="bi bi-geo-alt-fill text-danger me-1"></i>Locality:</strong>
+                            <span class="text-dark">{{ request_obj.locality }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <strong><i class="bi bi-calendar-event text-primary me-1"></i>Deadline:</strong>
+                            <span class="text-dark">{{ request_obj.deadline.strftime('%d %b %Y') if request_obj.deadline else 'Flexible / As soon as possible' }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <strong><i class="bi bi-shield-lock me-1 text-warning"></i>Contact Preference:</strong>
+                            <span class="text-dark">{{ request_obj.contact_preference.replace('_', ' ').title() }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <strong><i class="bi bi-hourglass-split me-1 text-info"></i>Age:</strong>
+                            <span class="text-dark">{{ request_obj.age_in_hours }} hours</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Controls Bar -->
+                <div class="card-footer bg-white p-3 border-top d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <div class="text-muted small">
+                        Role: <strong>{{ current_user.role.replace('_', ' ').title() if current_user else 'Guest' }}</strong>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2">
+                        <!-- Volunteer Action: Accept open task -->
+                        {% if current_user and (current_user.is_volunteer or current_user.is_admin) and request_obj.is_open %}
+                        <form method="POST" action="{{ url_for('volunteers.accept_request', request_id=request_obj.id) }}" data-confirm="Accept this community task?">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-success fw-bold">
+                                <i class="bi bi-hand-thumbs-up-fill me-1"></i> Accept This Task
+                            </button>
+                        </form>
+                        {% endif %}
+
+                        <!-- Volunteer Assigned Actions: Progress task -->
+                        {% if is_assignee %}
+                            {% if request_obj.status == 'Accepted' %}
+                            <form method="POST" action="{{ url_for('volunteers.update_task_status', request_id=request_obj.id) }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="new_status" value="In Progress">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-play-fill me-1"></i> Start Task (In Progress)
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ url_for('volunteers.update_task_status', request_id=request_obj.id) }}" data-confirm="Release task back to other volunteers?">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="new_status" value="Pending">
+                                <button type="submit" class="btn btn-outline-secondary">
+                                    Release Task
+                                </button>
+                            </form>
+                            {% elif request_obj.status == 'In Progress' %}
+                            <form method="POST" action="{{ url_for('volunteers.update_task_status', request_id=request_obj.id) }}" data-confirm="Mark this task as finished?">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="hidden" name="new_status" value="Completed">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-check-circle-fill me-1"></i> Mark as Completed
+                                </button>
+                            </form>
+                            {% endif %}
+                        {% endif %}
+
+                        <!-- Seeker / Admin Action: Cancel request -->
+                        {% if (is_owner or (current_user and current_user.is_admin)) and request_obj.status in ['Pending', 'Accepted', 'In Progress'] %}
+                        <form method="POST" action="{{ url_for('help_requests.cancel_request', request_id=request_obj.id) }}" data-confirm="Cancel this help request?">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-outline-danger">
+                                <i class="bi bi-x-circle me-1"></i> Cancel Request
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status History Timeline (Audit Trail) -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="fw-bold mb-0 text-dark">
+                        <i class="bi bi-clock-history me-2 text-primary"></i>Audit Log & Status History
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    {% if history %}
+                    <div class="timeline">
+                        {% for h in history %}
+                        <div class="timeline-item">
+                            <div class="timeline-dot"></div>
+                            <div class="d-flex justify-content-between align-items-baseline">
+                                <strong class="text-dark">
+                                    {{ h.previous_status }} &rarr; <span class="text-primary">{{ h.new_status }}</span>
+                                </strong>
+                                <span class="small text-muted">
+                                    {{ h.created_at.strftime('%d %b %Y, %H:%M:%S') if h.created_at else '' }}
+                                </span>
+                            </div>
+                            <div class="small text-secondary mt-1">
+                                Changed by: <strong>{{ h.changed_by.full_name if h.changed_by else 'System / Unknown' }}</strong>
+                                {% if h.notes %}
+                                <div class="fst-italic text-muted mt-1">&ldquo;{{ h.notes }}&rdquo;</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted small mb-0">No historical status changes recorded yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar: Contact & Assignment Details -->
+        <div class="col-lg-4">
+            <!-- Requester & Contact Info Card (Privacy Protected) -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h6 class="fw-bold mb-0 text-dark">
+                        <i class="bi bi-person-circle me-2 text-primary"></i>Help Seeker Information
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="text-muted small">Full Name</div>
+                        <strong class="text-dark fs-6">{{ request_obj.seeker.full_name }}</strong>
+                    </div>
+
+                    {% if can_view_contact %}
+                    <div class="mb-3">
+                        <div class="text-muted small">Direct Phone Number</div>
+                        <a href="tel:{{ request_obj.seeker.phone }}" class="fw-bold text-success text-decoration-none">
+                            <i class="bi bi-telephone-fill me-1"></i>{{ request_obj.seeker.phone }}
+                        </a>
+                    </div>
+                    <div class="mb-3">
+                        <div class="text-muted small">Email Address</div>
+                        <a href="mailto:{{ request_obj.seeker.email }}" class="text-primary text-decoration-none small">
+                            <i class="bi bi-envelope-fill me-1"></i>{{ request_obj.seeker.email }}
+                        </a>
+                    </div>
+                    <div class="badge bg-success bg-opacity-10 text-success p-2 small w-100 text-start">
+                        <i class="bi bi-unlock-fill me-1"></i> Contact details unlocked according to user privacy preference.
+                    </div>
+                    {% else %}
+                    <div class="alert alert-light border small text-muted mb-0">
+                        <i class="bi bi-lock-fill text-warning me-1"></i>
+                        <strong>Contact Details Protected:</strong><br>
+                        Phone number and email will be made accessible after an eligible volunteer accepts this task.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Assigned Volunteer Card -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h6 class="fw-bold mb-0 text-dark">
+                        <i class="bi bi-person-badge me-2 text-success"></i>Assigned Volunteer
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if request_obj.assigned_volunteer %}
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="rounded-circle bg-success bg-opacity-10 text-success p-2 me-2">
+                                <i class="bi bi-person-check-fill fs-4"></i>
+                            </div>
+                            <div>
+                                <strong class="text-dark d-block">{{ request_obj.assigned_volunteer.full_name }}</strong>
+                                <small class="text-muted"><i class="bi bi-geo-alt me-1"></i>{{ request_obj.assigned_volunteer.locality }}</small>
+                            </div>
+                        </div>
+
+                        {% if is_owner or (current_user and current_user.is_admin) %}
+                        <div class="small border-top pt-2 text-secondary">
+                            <div><i class="bi bi-telephone me-1 text-success"></i>{{ request_obj.assigned_volunteer.phone }}</div>
+                            <div><i class="bi bi-envelope me-1 text-primary"></i>{{ request_obj.assigned_volunteer.email }}</div>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-3 text-muted">
+                            <i class="bi bi-hourglass text-warning fs-3 mb-2 d-block"></i>
+                            <span class="small">Awaiting a volunteer to accept this task.</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Emergency Alert Notice if relevant -->
+            {% if active_emergency and active_emergency.is_active and active_emergency.affected_locality.lower() in request_obj.locality.lower() %}
+            <div class="alert alert-danger border-danger shadow-sm">
+                <h6 class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-1"></i> Crisis Zone Alert</h6>
+                <p class="small mb-0">
+                    This request is in <strong>{{ active_emergency.affected_locality }}</strong>, which is currently undergoing active emergency coordination.
+                </p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
