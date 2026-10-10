@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Community Help Connect
 
 > **A Centralized Hyperlocal Peer-to-Peer Community Support & Emergency Coordination Web Application**  
@@ -254,3 +255,6 @@ All test cases run against an isolated in-memory test database without modifying
 2. All POST forms are protected by CSRF tokens via `Flask-WTF`.
 3. Server-side custom decorators (`@login_required`, `@role_required`, `@admin_required`) protect every privileged route.
 4. Contact information is conditionally masked: phone numbers and emails are hidden until a volunteer formally accepts a task, according to the seeker's preference.
+=======
+# Community-help-connect
+>>>>>>> e5c75ab2d90d0ca9ff67a9c7a77973e4bb608b46
