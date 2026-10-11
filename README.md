@@ -120,7 +120,7 @@ DB_PASSWORD=your_actual_mysql_password
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_NAME=community_help_db
-SECRET_KEY=college-viva-secret-key-community-help-2026
+SECRET_KEY=secret-key-community-help-2026
 USE_SQLITE_FALLBACK=0
 ```
 > **Note for quick local viva testing:** If MySQL is not running on your machine, you can change `USE_SQLITE_FALLBACK=1` in `.env` to run with an instant local SQLite database in `instance/community_help.db`!
