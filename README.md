@@ -234,27 +234,6 @@ All test cases run against an isolated in-memory test database without modifying
 
 ---
 
-## 9. Viva Q&A Guide for Students
 
-**Q1: Why did you choose Python Flask instead of Django or Node.js?**  
-*Answer:* Flask provides a clean, unbloated microframework architecture that allows full transparency over every route, middleware, session check, and database transaction. It makes demonstrating modular Blueprints (`auth`, `help_requests`, `volunteers`, `donations`, `admin`) straightforward without hidden framework magic.
-
-**Q2: How do you prevent two volunteers from accepting the same request simultaneously (Race Condition)?**  
-*Answer:* We implement optimistic/pessimistic row-level locking using SQLAlchemy's `with_for_update()` inside an isolated database transaction (`volunteers/routes.py`). The query checks `status='Pending' and assigned_volunteer_id=None` while locking the row. If another volunteer commits first, the second query returns `None` and cleanly rolls back.
-
-**Q3: How does your volunteer matching work without using AI or expensive Google Maps APIs?**  
-*Answer:* We implemented a deterministic, explainable **Rule-Based Matching Algorithm** (`helpers.py:calculate_matching_score`). It scores open requests using:
-1. Urgency Level (Critical: +100 pts, Urgent: +50 pts, Normal: +10 pts)
-2. Locality proximity (Exact match: +40 pts, Sub-locality: +20 pts)
-3. Emergency Zone Boost (+60 pts if in an active crisis locality)
-4. Request Age (+1 pt per 2 hours to avoid request starvation).
-
-**Q4: How do you enforce security and prevent unauthorized access to private contact details?**  
-*Answer:* 
-1. Passwords are never stored in plaintext; we use salted hashing via `werkzeug.security`.
-2. All POST forms are protected by CSRF tokens via `Flask-WTF`.
-3. Server-side custom decorators (`@login_required`, `@role_required`, `@admin_required`) protect every privileged route.
-4. Contact information is conditionally masked: phone numbers and emails are hidden until a volunteer formally accepts a task, according to the seeker's preference.
-=======
 # Community-help-connect
 >>>>>>> e5c75ab2d90d0ca9ff67a9c7a77973e4bb608b46
